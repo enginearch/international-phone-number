@@ -35,7 +35,6 @@ angular.module("internationalPhoneNumber", [])
     if ctrl
       if element.val() != ''
         $timeout () ->
-          # element.intlTelInput 'setNumber', element.val()
           if intlTelInput.getInstance(element[0])
             intlTelInput.getInstance(element[0]).setNumber(element.val())
           else
@@ -86,7 +85,7 @@ angular.module("internationalPhoneNumber", [])
         return value
 
       if intlTelInput.getInstance(element[0])
-        intlTelInput.getInstance(element[0]).setNumber(value.startsWith('+') ? value : ('+' + value))
+        intlTelInput.getInstance(element[0]).setNumber(if value.startsWith('+') then value else ('+' + value))
       else
         console.log('intlTelInput not initialized yet', )
 
@@ -110,6 +109,6 @@ angular.module("internationalPhoneNumber", [])
       scope.$apply read
 
     element.on '$destroy', () ->
-      element.intlTelInput('destroy');
+      intlTelInput.getInstance(element[0]).destroy()
       element.off 'blur keyup change'
 ]
