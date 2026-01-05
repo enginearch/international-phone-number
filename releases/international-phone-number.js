@@ -79,14 +79,11 @@
             }
           });
           ctrl.$formatters.push(function(value) {
-            var ref;
             if (!value) {
               return value;
             }
             if (intlTelInput.getInstance(element[0])) {
-              intlTelInput.getInstance(element[0]).setNumber((ref = value.startsWith('+')) != null ? ref : {
-                value: '+' + value
-              });
+              intlTelInput.getInstance(element[0]).setNumber(value.startsWith('+') ? value : '+' + value);
             } else {
               console.log('intlTelInput not initialized yet');
             }
@@ -110,7 +107,7 @@
             return scope.$apply(read);
           });
           return element.on('$destroy', function() {
-            element.intlTelInput('destroy');
+            intlTelInput.getInstance(element[0]).destroy();
             return element.off('blur keyup change');
           });
         }
