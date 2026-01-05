@@ -10,7 +10,7 @@
     geoIpLookup: null,
     nationalMode: true,
     numberType: "MOBILE",
-    onlyCountries: void 0,
+    onlyCountries: [],
     preferredCountries: ['us', 'gb'],
     skipUtilScriptDownload: false,
     utilsScript: ""
@@ -24,11 +24,16 @@
           country: '='
         },
         link: function(scope, element, attrs, ctrl) {
-          var handleWhatsSupposedToBeAnArray, options, read, watchOnce;
+          var handleWhatsSupposedToBeAnArray, itiInstance, options, read;
+          itiInstance = null;
           if (ctrl) {
             if (element.val() !== '') {
               $timeout(function() {
-                element.intlTelInput('setNumber', element.val());
+                if (intlTelInput.getInstance(element[0])) {
+                  intlTelInput.getInstance(element[0]).setNumber(element.val());
+                } else {
+                  console.log('intlTelInput not initialized yet');
+                }
                 return ctrl.$setViewValue(element.val());
               }, 0);
             }
@@ -60,31 +65,31 @@
               return options[key] = option;
             }
           });
-          watchOnce = scope.$watch('ngModel', function(newValue) {
-            return scope.$$postDigest(function() {
-              if (newValue !== null && newValue !== void 0 && newValue.length > 0) {
-                if (newValue[0] !== '+') {
-                  newValue = '+' + newValue;
-                }
-                ctrl.$modelValue = newValue;
-              }
-              element.intlTelInput(options);
-              if (!(options.skipUtilScriptDownload || attrs.skipUtilScriptDownload !== void 0 || options.utilsScript)) {
-                element.intlTelInput('loadUtils', '/bower_components/intl-tel-input/lib/libphonenumber/build/utils.js');
-              }
-              return watchOnce();
-            });
-          });
+          if (ctrl.$modelValue !== null && ctrl.$modelValue !== void 0 && ctrl.$modelValue.length > 0) {
+            if (ctrl.$modelValue[0] !== '+') {
+              ctrl.$modelValue = '+' + ctrl.$modelValue;
+              element.val(ctrl.$modelValue);
+            }
+          }
+          console.log('about to initialize intlTelInput', element, 'val: ', element.val(), 'modelValue: ', ctrl.$modelValue, 'options: ', options);
+          itiInstance = intlTelInput(element[0], options);
           scope.$watch('country', function(newValue) {
             if (newValue !== null && newValue !== void 0 && newValue !== '') {
-              return element.intlTelInput("selectCountry", newValue);
+              return intlTelInput.getInstance(element[0]).selectCountry(newValue);
             }
           });
           ctrl.$formatters.push(function(value) {
+            var ref;
             if (!value) {
               return value;
             }
-            element.intlTelInput('setNumber', value);
+            if (intlTelInput.getInstance(element[0])) {
+              intlTelInput.getInstance(element[0]).setNumber((ref = value.startsWith('+')) != null ? ref : {
+                value: '+' + value
+              });
+            } else {
+              console.log('intlTelInput not initialized yet');
+            }
             return element.val();
           });
           ctrl.$parsers.push(function(value) {
@@ -95,11 +100,11 @@
           });
           ctrl.$validators.internationalPhoneNumber = function(value) {
             var selectedCountry;
-            selectedCountry = element.intlTelInput('getSelectedCountryData');
+            selectedCountry = intlTelInput.getInstance(element[0]).getSelectedCountryData();
             if (!value || (selectedCountry && selectedCountry.dialCode === value)) {
               return true;
             }
-            return element.intlTelInput("isValidNumber");
+            return intlTelInput.getInstance(element[0]).isValidNumber();
           };
           element.on('blur keyup change', function(event) {
             return scope.$apply(read);

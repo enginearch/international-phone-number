@@ -14,7 +14,7 @@ angular.module("internationalPhoneNumber", [])
     geoIpLookup:            null
     nationalMode:           true
     numberType:             "MOBILE"
-    onlyCountries:          undefined
+    onlyCountries:          []
     preferredCountries:     ['us', 'gb']
     skipUtilScriptDownload: false
     utilsScript:            ""
@@ -30,10 +30,16 @@ angular.module("internationalPhoneNumber", [])
 
   link: (scope, element, attrs, ctrl) ->
 
+    itiInstance = null
+
     if ctrl
       if element.val() != ''
         $timeout () ->
-          element.intlTelInput 'setNumber', element.val()
+          # element.intlTelInput 'setNumber', element.val()
+          if intlTelInput.getInstance(element[0])
+            intlTelInput.getInstance(element[0]).setNumber(element.val())
+          else
+            console.log('intlTelInput not initialized yet')
           ctrl.$setViewValue element.val()
         , 0
 
@@ -61,37 +67,29 @@ angular.module("internationalPhoneNumber", [])
       else
         options[key] = option
 
-    # Wait for ngModel to be set
-    watchOnce = scope.$watch('ngModel', (newValue) ->
-      # Wait to see if other scope variables were set at the same time
-      scope.$$postDigest ->
 
-        if newValue != null && newValue != undefined && newValue.length > 0
+    if ctrl.$modelValue != null && ctrl.$modelValue != undefined && ctrl.$modelValue.length > 0
+      if ctrl.$modelValue[0] != '+'
+        ctrl.$modelValue = '+' + ctrl.$modelValue
+        element.val(ctrl.$modelValue)
+    console.log('about to initialize intlTelInput', element, 'val: ', element.val(), 'modelValue: ', ctrl.$modelValue, 'options: ', options);
+    itiInstance = intlTelInput(element[0], options);
 
-          if newValue[0] != '+'
-            newValue = '+' + newValue
-
-          ctrl.$modelValue = newValue
-
-        element.intlTelInput(options)
-
-        unless options.skipUtilScriptDownload || attrs.skipUtilScriptDownload != undefined || options.utilsScript
-          element.intlTelInput('loadUtils', '/bower_components/intl-tel-input/lib/libphonenumber/build/utils.js')
-
-        watchOnce()
-
-    )
 
     scope.$watch('country', (newValue) ->
         if newValue != null && newValue != undefined && newValue != ''
-            element.intlTelInput("selectCountry", newValue)
+          intlTelInput.getInstance(element[0]).selectCountry(newValue);
     )
 
     ctrl.$formatters.push (value) ->
       if !value
         return value
 
-      element.intlTelInput 'setNumber', value
+      if intlTelInput.getInstance(element[0])
+        intlTelInput.getInstance(element[0]).setNumber(value.startsWith('+') ? value : ('+' + value))
+      else
+        console.log('intlTelInput not initialized yet', )
+
       element.val()
 
     ctrl.$parsers.push (value) ->
@@ -101,12 +99,12 @@ angular.module("internationalPhoneNumber", [])
       value.replace(/[^\d]/g, '')
 
     ctrl.$validators.internationalPhoneNumber = (value) ->
-      selectedCountry = element.intlTelInput('getSelectedCountryData')
+      selectedCountry = intlTelInput.getInstance(element[0]).getSelectedCountryData()
 
       if !value || (selectedCountry && selectedCountry.dialCode == value)
         return true
 
-      element.intlTelInput("isValidNumber")
+      intlTelInput.getInstance(element[0]).isValidNumber()
 
     element.on 'blur keyup change', (event) ->
       scope.$apply read
