@@ -96,7 +96,11 @@
             if (!value) {
               return value;
             }
-            return value.replace(/[^\d]/g, '');
+            if (intlTelInput.getInstance(element[0])) {
+              return intlTelInput.getInstance(element[0]).getNumber().replace(/[^\d]/g, '');
+            } else {
+              return value.replace(/[^\d]/g, '');
+            }
           });
           ctrl.$validators.internationalPhoneNumber = function(value) {
             var selectedCountry;
