@@ -6,12 +6,13 @@
     autoHideDialCode: true,
     autoPlaceholder: true,
     customPlaceholder: null,
-    defaultCountry: "",
+    initialCountry: "",
     geoIpLookup: null,
     nationalMode: true,
     numberType: "MOBILE",
     onlyCountries: [],
-    preferredCountries: ['us', 'gb'],
+    countryOrder: ['us', 'gb'],
+    excludeCountries: [],
     skipUtilScriptDownload: false,
     utilsScript: ""
   }).directive('internationalPhoneNumber', [
@@ -55,8 +56,10 @@
               return;
             }
             option = attrs[key];
-            if (key === 'preferredCountries') {
-              return options.preferredCountries = handleWhatsSupposedToBeAnArray(option);
+            if (key === 'countryOrder') {
+              return options.countryOrder = handleWhatsSupposedToBeAnArray(option);
+            } else if (key === 'excludeCountries') {
+              return options.excludeCountries = handleWhatsSupposedToBeAnArray(option);
             } else if (key === 'onlyCountries') {
               return options.onlyCountries = handleWhatsSupposedToBeAnArray(option);
             } else if (typeof value === "boolean") {

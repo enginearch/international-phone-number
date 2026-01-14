@@ -10,12 +10,13 @@ angular.module("internationalPhoneNumber", [])
     autoHideDialCode:       true
     autoPlaceholder:        true
     customPlaceholder:      null
-    defaultCountry:         ""
+    initialCountry:         ""
     geoIpLookup:            null
     nationalMode:           true
     numberType:             "MOBILE"
     onlyCountries:          []
-    preferredCountries:     ['us', 'gb']
+    countryOrder:           ['us', 'gb']
+    excludeCountries:       []
     skipUtilScriptDownload: false
     utilsScript:            ""
   }
@@ -57,8 +58,10 @@ angular.module("internationalPhoneNumber", [])
     angular.forEach options, (value, key) ->
       return unless attrs.hasOwnProperty(key) and angular.isDefined(attrs[key])
       option = attrs[key]
-      if key == 'preferredCountries'
-        options.preferredCountries = handleWhatsSupposedToBeAnArray option
+      if key == 'countryOrder'
+        options.countryOrder = handleWhatsSupposedToBeAnArray option
+      else if key == 'excludeCountries'
+        options.excludeCountries = handleWhatsSupposedToBeAnArray option
       else if key == 'onlyCountries'
         options.onlyCountries = handleWhatsSupposedToBeAnArray option
       else if typeof(value) == "boolean"
